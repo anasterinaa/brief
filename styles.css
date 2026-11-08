@@ -188,8 +188,9 @@ main { padding-top: var(--top-offset); }
   background: var(--charcoal);
   transform: translateY(-1px);
 }
-.hero-actions { grid-area: actions; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
-.hero-text { grid-area: text; align-self: center; }
+.hero-side { display: contents; }
+.hero-actions { grid-area: actions; display: flex; }
+.hero-text { grid-area: text; }
 .hero-list { grid-area: list; }
 .hero-list {
   display: grid;
@@ -561,7 +562,11 @@ input.control { min-height: 64px; padding-top: 14px; padding-bottom: 14px; }
    ============================================================ */
 @media (min-width: 700px) {
   :root { --gutter: 32px; --top-offset: 104px; }
-  .hero { grid-template-columns: 1.2fr 1fr; grid-template-areas: "text list" "text actions"; gap: 32px 48px; padding: 56px 48px; align-items: start; }
+  .hero { grid-template-columns: 1.2fr 1fr; grid-template-areas: "text side"; gap: 48px; padding: 56px 48px; align-items: stretch; }
+  /* обе половины одной высоты, содержимое по центру на одном уровне */
+  .hero-text { display: flex; flex-direction: column; justify-content: center; }
+  .hero-side { display: flex; flex-direction: column; justify-content: center; gap: 24px; grid-area: side; }
+  .hero-list { margin: 0; }
   .hero .display { font-size: clamp(44px, 6vw, 68px); }
   .final-grid { grid-template-columns: minmax(260px, 5fr) 6fr; gap: 48px; align-items: center; }
   .final-photo { aspect-ratio: 4 / 5; max-height: 620px; }
