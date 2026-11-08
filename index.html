@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Бриф на сайт</title>
+  <meta name="description" content="Пошаговый бриф: семь коротких этапов, черновик сохраняется автоматически.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Шапка-капсула: название, счётчик этапов, прогресс-бар -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#" id="brand">Бриф</a>
+      <div class="counter" id="counter" aria-live="polite"></div>
+      <div class="progress" aria-hidden="true"><i id="progressFill"></i></div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- Экран 0: интро -->
+    <section class="screen" id="screen-0" data-step="0">
+      <div class="hero">
+        <div class="hero-text">
+          <p class="pill">Бриф на сайт</p>
+          <h1 class="display">Расскажите о&nbsp;бизнесе своими словами</h1>
+          <p class="lead">Семь коротких этапов, по&nbsp;3–5 вопросов. Правильных формулировок не&nbsp;нужно: пишите как думаете, а&nbsp;чего не&nbsp;знаете — так и&nbsp;напишите.</p>
+          <ul class="perks">
+            <li>Черновик сохраняется сам — можно закрыть вкладку</li>
+            <li>Можно вернуться назад и поправить ответ</li>
+            <li>Ссылки и файлы — на&nbsp;шестом этапе</li>
+          </ul>
+          <button class="btn btn-dark btn-lg" id="startBtn" type="button">Начать</button>
+        </div>
+        <div class="hero-side">
+          <figure class="hero-photo"><img src="photos/intro.jpg" alt="" width="1000" height="1500"></figure>
+          <ol class="hero-list" id="introList" aria-label="Этапы брифа"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Экраны 1…7 строятся из массива вопросов в app.js -->
+    <div id="stagesMount"></div>
+
+    <!-- Финальный экран -->
+    <section class="screen" id="screen-final" hidden>
+      <div class="final-grid">
+        <figure class="final-photo" id="finalPhotoBox">
+          <img id="finalPhoto" alt="">
+        </figure>
+        <div class="final-body">
+          <h2 class="display" id="finalTitle" tabindex="-1">Спасибо!</h2>
+          <p class="lead" id="finalLead"></p>
+          <div class="notice notice-warn" id="finalWarn" hidden></div>
+          <h3 class="steps-title">Что будет дальше</h3>
+          <ol class="steps" id="finalSteps"></ol>
+          <div class="actions">
+            <a class="btn btn-dark btn-lg" id="tgBtn" href="#" target="_blank" rel="noopener">Написать в Telegram</a>
+            <button class="btn btn-soft btn-lg" id="dlBtn" type="button">Скачать копию ответов</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Нижняя навигация: назад, точки-этапы, далее -->
+  <nav class="bottombar" id="bottombar" hidden aria-label="Навигация по этапам">
+    <div class="bottombar-inner">
+      <button class="btn btn-soft" id="backBtn" type="button">Назад</button>
+      <div class="dots" id="dots"></div>
+      <button class="btn btn-dark" id="nextBtn" type="button">Далее</button>
+    </div>
+  </nav>
+
+  <!-- Подвал: документы, реквизиты, связь (наполняется из SITE в app.js) -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <ul class="footer-links" id="footerLinks"></ul>
+      <p class="footer-req" id="footerReq"></p>
+      <a class="btn btn-soft" id="footerTg" href="#" target="_blank" rel="noopener">Связаться в&nbsp;Telegram</a>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
