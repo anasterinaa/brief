@@ -7,7 +7,7 @@
 /* ---------- Настройки сайта: имя, контакты, документы ---------- */
 const SITE = {
   brand: "Бриф",                    // название в шапке
-  telegram: "your_username",        // ник в Telegram без @  (ЗАМЕНИТЬ)
+  telegram: "anasterinaa",          // ник в Telegram без @
   replyDays: 2,                     // за сколько рабочих дней отвечаю
   photo: "photos/final.jpg",             // путь к фотографии для финального экрана
   photoAlt: "Автор брифа",
@@ -16,9 +16,9 @@ const SITE = {
     { id: "privacy", title: "Политика конфиденциальности",            href: "#" },
     { id: "consent", title: "Согласие на обработку персональных данных", href: "#" },
     { id: "offer",   title: "Публичная оферта",                        href: "#" },
-    { id: "req",     title: "Реквизиты ИП",                            href: "#" }
+    { id: "req",     title: "Реквизиты",                               href: "#" }
   ],
-  requisites: "ИП Фамилия Имя Отчество · ИНН 000000000000 · ОГРНИП 000000000000000"
+  requisites: ""   // сюда: «Фамилия Имя Отчество · самозанятая (плательщик НПД) · ИНН 000000000000»
 };
 
 /* ---------- Этапы (левая колонка на десктопе) ---------- */
@@ -846,6 +846,7 @@ const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
       ul.append(li);
     });
     $("#footerReq").textContent = nb(SITE.requisites);
+    $("#footerReq").hidden = !SITE.requisites;
     $("#footerTg").href = tgUrl();
   }
 
