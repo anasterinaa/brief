@@ -171,6 +171,7 @@ main { padding-top: var(--top-offset); }
 /* ---------- Интро ---------- */
 .hero {
   display: grid;
+  grid-template-areas: "text" "actions" "list";
   gap: 32px;
   padding: 32px 24px;
   border-radius: 32px;
@@ -187,7 +188,9 @@ main { padding-top: var(--top-offset); }
   background: var(--charcoal);
   transform: translateY(-1px);
 }
-.hero-side { display: grid; gap: 16px; align-self: start; }
+.hero-actions { grid-area: actions; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+.hero-text { grid-area: text; align-self: center; }
+.hero-list { grid-area: list; }
 .hero-list {
   display: grid;
   gap: 4px;
@@ -558,7 +561,8 @@ input.control { min-height: 64px; padding-top: 14px; padding-bottom: 14px; }
    ============================================================ */
 @media (min-width: 700px) {
   :root { --gutter: 32px; --top-offset: 104px; }
-  .hero { grid-template-columns: 1.15fr 1fr; gap: 48px; padding: 56px 48px; align-items: center; }
+  .hero { grid-template-columns: 1.2fr 1fr; grid-template-areas: "text list" "text actions"; gap: 32px 48px; padding: 56px 48px; align-items: start; }
+  .hero .display { font-size: clamp(44px, 6vw, 68px); }
   .final-grid { grid-template-columns: minmax(260px, 5fr) 6fr; gap: 48px; align-items: center; }
   .final-photo { aspect-ratio: 4 / 5; max-height: 620px; }
   .stage-side .s-desc { max-width: 520px; }
