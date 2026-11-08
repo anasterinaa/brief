@@ -224,6 +224,7 @@ const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
   let saveTimer = null;
   function saveDraft(now) {
+    if (state.sent) return;            // бриф уже отправлен — черновик больше не нужен
     const run = () => {
       safeSet(DRAFT_KEY, JSON.stringify({
         v: 1,
@@ -758,6 +759,8 @@ const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
         } catch (e) { failed.push(state.files[i].name); }
       }
 
+      state.sent = true;
+      clearTimeout(saveTimer);
       safeDel(DRAFT_KEY);
       showFinal("sent", failed);
     } catch (e) {
