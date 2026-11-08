@@ -621,6 +621,76 @@ const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
     box.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  /* ---------- Сообщения для Telegram (HTML-разметка) ---------- */
+  const TG_CHUNK = 3500;   // запас от лимита Telegram 4096 символов
+  const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const clip = (t, n) => (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, "") + "…" : t);
+
+  // Режет текст по абзацам, потом по строкам, предложениям и словам — не посреди фразы
+  function splitText(text, max) {
+    if (text.length <= max) return [text];
+    const pieces = [];
+    text.split(/\n{2,}/).forEach(par => {
+      if (par.length <= max) { pieces.push([par, "\n\n"]); return; }
+      par.split("\n").forEach(line => {
+        if (line.length <= max) { pieces.push([line, "\n"]); return; }
+        (line.match(/[^.!?…]+[.!?…]*\s*/g) || [line]).forEach(sent => {
+          if (sent.length <= max) { pieces.push([sent, ""]); return; }
+          let buf = "";
+          sent.split(/(\s+)/).forEach(w => {
+            if ((buf + w).length > max) { pieces.push([buf, ""]); buf = w.trimStart(); } else buf += w;
+          });
+          if (buf) pieces.push([buf, ""]);
+        });
+      });
+    });
+    const out = [];
+    let cur = "";
+    pieces.forEach(([p, sep]) => {
+      if ((cur + p).length > max) { if (cur.trim()) out.push(cur.trim()); cur = ""; }
+      cur += p + sep;
+    });
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+
+  // Сводка + по сообщению на этап; пустые ответы уже отфильтрованы в snapshot()
+  function buildTelegram(snap) {
+    const m = snap.meta;
+    const head = ["📋 <b>Новый бриф</b>", ""];
+    if (m.name) head.push("<b>Имя:</b> " + esc(m.name));
+    if (m.company) head.push("<b>Компания:</b> " + esc(m.company));
+    if (m.contact) head.push("<b>Контакт:</b> " + esc(m.contact));
+    const main = [];
+    snap.stages.forEach(s => s.items.forEach(it => {
+      if (it.summary && !/^ct_/.test(it.key)) {
+        main.push("<b>" + esc(it.label) + "</b>\n" + esc(clip(it.value, 280)));
+      }
+    }));
+    let summary = head.join("\n");
+    if (main.length) summary += "\n\n" + main.join("\n\n");
+    summary = splitText(summary, TG_CHUNK)[0];
+
+    const blocks = [];
+    snap.stages.forEach(s => {
+      const title = pad(s.num) + " · " + s.title;
+      const items = [];
+      s.items.forEach(it => {
+        splitText(esc(it.value), TG_CHUNK - 400).forEach((c, i) =>
+          items.push((i === 0 ? "<b>" + esc(it.label) + "</b>\n" : "<b>…продолжение</b>\n") + c));
+      });
+      let part = 1, cur = "";
+      const header = () => "<b>" + esc(title) + (part > 1 ? " (" + part + ")" : "") + "</b>";
+      items.forEach(b => {
+        const next = cur ? cur + "\n\n" + b : header() + "\n\n" + b;
+        if (cur && next.length > TG_CHUNK) { blocks.push(cur); part++; cur = header() + "\n\n" + b; }
+        else cur = next;
+      });
+      if (cur) blocks.push(cur);
+    });
+    return { summary, blocks };
+  }
+
   async function postWithTimeout(url, init, ms) {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), ms);
@@ -663,24 +733,25 @@ const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
     $("#submitStatus").hidden = true;
 
     try {
-      const res = await postWithTimeout(ENDPOINT, {
-        method: "POST",
-        // text/plain — «простой» запрос: браузер не делает предварительную CORS-проверку
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(snap)
-      }, 25000);
+      // Воркер принимает форму: summary (сводка) + blocks (по одному сообщению на этап)
+      const tg = buildTelegram(snap);
+      const fd0 = new FormData();
+      fd0.append("summary", tg.summary);
+      tg.blocks.forEach(b => fd0.append("blocks", b));
+      const res = await postWithTimeout(ENDPOINT, { method: "POST", body: fd0 }, 30000);
       let data = null;
       try { data = await res.json(); } catch (e) {}
       if (!res.ok || !data || !data.ok) throw new Error("bad response");
 
-      // Файлы уходят отдельными запросами; их сбой не отменяет уже доставленный бриф
+      // Файлы уходят отдельными запросами (так не упираемся в лимит размера);
+      // их сбой не отменяет уже доставленный бриф
       const failed = [];
       for (let i = 0; i < state.files.length; i++) {
         nextBtn.textContent = "Файлы " + (i + 1) + " / " + state.files.length + "…";
         try {
           const fd = new FormData();
-          fd.append("file", state.files[i], state.files[i].name);
-          fd.append("from", snap.meta.name || "");
+          fd.append("summary", "📎 Файл к брифу" + (snap.meta.name ? " от " + esc(snap.meta.name) : ""));
+          fd.append("files", state.files[i], state.files[i].name);
           const r = await postWithTimeout(ENDPOINT, { method: "POST", body: fd }, 120000);
           const j = await r.json().catch(() => null);
           if (!r.ok || !j || !j.ok) throw new Error("file");
