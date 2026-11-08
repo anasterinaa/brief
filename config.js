@@ -4,5 +4,5 @@
 // Пока строка пустая, бриф никуда не отправляется:
 // вместо этого человеку предлагается скачать файл с ответами.
 window.BRIEF_CONFIG = {
-  endpoint: ""
+  endpoint: "https://empty-star-e3dabriefdesignbot.dkkfkfyfcnfcb.workers.dev/"
 };
